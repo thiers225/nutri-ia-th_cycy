@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environnement virtuel
+.venv/
+venv/
+env/
+
+# uv
+.uv/
+
+# Données (ne pas versionner les données brutes/processed)
+data/raw/
+data/interim/
+data/processed/
+data/external/
+
+# Modèles entraînés
+models/
+*.pt
+*.pth
+*.onnx
+
+# Notebooks checkpoints
+notebooks/.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Système
+.DS_Store
+Thumbs.db
+
+# Variables d'environnement
+.env
+.env.*
+
+# Logs
+*.log
+logs/
+
+# Tests
+.pytest_cache/
+.coverage
+htmlcov/
