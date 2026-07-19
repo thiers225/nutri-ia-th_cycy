@@ -3,9 +3,16 @@ Point d'entrée principal — Nutri-IA Data Collection.
 
 Commandes disponibles
 ---------------------
+    python main.py prepare        # Prétraite les images raw → processed
+    python main.py prepare --help # Options complètes
     python main.py embed          # Génère les embeddings des images processed
     python main.py embed --help   # Options complètes
     python main.py info           # Affiche la config active et les stats modèle
+
+Workflow typique
+----------------
+    python main.py prepare        # 1. raw → processed
+    python main.py embed          # 2. processed → embeddings
 """
 
 from __future__ import annotations
@@ -16,6 +23,25 @@ import sys
 from loguru import logger
 
 from src.config.settings import embed_cfg, paths
+
+
+def cmd_prepare(args: argparse.Namespace) -> None:
+    """Lance le pipeline de prétraitement raw → processed."""
+    from src.process.prepare_images import run_prepare_pipeline
+
+    counters = run_prepare_pipeline(
+        input_dir=args.input,
+        output_dir=args.output,
+        max_size=args.max_size,
+        dry_run=args.dry_run,
+        overwrite=args.overwrite,
+    )
+    print(
+        f"\nRésultat : {counters['processed']} traitées, "
+        f"{counters['skipped']} ignorées, "
+        f"{counters['errors']} erreurs "
+        f"(sur {counters['total']} images sources)."
+    )
 
 
 def cmd_embed(args: argparse.Namespace) -> None:
@@ -55,6 +81,33 @@ def build_parser() -> argparse.ArgumentParser:
         description="Nutri-IA — Pipeline de collecte et traitement de données.",
     )
     sub = parser.add_subparsers(dest="command")
+
+    # --- prepare ---
+    p_prepare = sub.add_parser(
+        "prepare",
+        help="Prétraite les images brutes (raw → processed).",
+    )
+    p_prepare.add_argument(
+        "--input", type=str, default=None,
+        help="Répertoire source (data/raw/images par défaut).",
+    )
+    p_prepare.add_argument(
+        "--output", type=str, default=None,
+        help="Répertoire de sortie (data/processed/images par défaut).",
+    )
+    p_prepare.add_argument(
+        "--max-size", type=int, default=None,
+        help="Taille max en pixels (plus grande dimension). Pas de redim si absent.",
+    )
+    p_prepare.add_argument(
+        "--dry-run", action="store_true",
+        help="Simule sans écrire de fichiers.",
+    )
+    p_prepare.add_argument(
+        "--overwrite", action="store_true",
+        help="Réécrit les fichiers déjà présents dans processed.",
+    )
+    p_prepare.set_defaults(func=cmd_prepare)
 
     # --- embed ---
     p_embed = sub.add_parser("embed", help="Génère les embeddings d'images.")
